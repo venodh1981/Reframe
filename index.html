@@ -76,7 +76,7 @@
     <!-- ================= PHASE 1 & 2: PROFILE & CALCULATION ENGINE ================= -->
     <div id="profile-tab" class="card">
         <h2>Phase 1 & 2: User Profile & Universal Calculation Core</h2>
-        <p class="subtitle" style="margin-bottom: 15px;">Input your metrics to automatically calculate your target daily calories and macronutrients.</p>
+        <p class="subtitle" style="margin-bottom: 15px;">Input your metrics. Data automatically saves to your browser storage.</p>
         
         <div class="form-grid">
             <div class="form-group">
@@ -110,7 +110,7 @@
             <div class="form-group">
                 <label>Primary Goal Physique</label>
                 <select id="userGoal">
-                    <option value="muscle" selected>Muscle Gain / Bulking (+ Surplus ~3,220 kcal)</option>
+                    <option value="muscle" selected>Muscle Gain / Bulking (+ Surplus)</option>
                     <option value="maintenance">Maintenance / Body Recomp</option>
                     <option value="fatloss">Fat Loss / Cutting (- Deficit)</option>
                 </select>
@@ -127,7 +127,7 @@
     <div id="meal-tab" class="hidden">
         <div class="card" id="meal-input-card">
             <h2>Phase 4: Ingredient & Meal Frequency Customizer</h2>
-            <p class="subtitle" style="margin-bottom: 15px;">Configure your daily meal frequency and protein powder availability.</p>
+            <p class="subtitle" style="margin-bottom: 15px;">Configure your daily meal frequency and protein availability.</p>
             
             <div class="form-grid">
                 <div class="form-group">
@@ -192,7 +192,7 @@
     <div id="workout-tab" class="hidden">
         <div class="card" id="workout-input-card">
             <h2>Phase 3 & 5: Equipment & Weight Inventory Builder</h2>
-            <p class="subtitle" style="margin-bottom: 15px;">Check your available gear, input weight loads, or add any extra equipment you own.</p>
+            <p class="subtitle" style="margin-bottom: 15px;">Check your available gear and input your maximum weight loads.</p>
             
             <div class="equipment-grid">
                 <div class="equipment-item">
@@ -235,6 +235,11 @@
 let globalCals = 3220;
 let globalProtein = 200;
 
+// Load saved data when the page opens
+window.onload = function() {
+    loadSavedData();
+};
+
 function switchTab(tab) {
     document.getElementById('btn-profile-tab').classList.remove('active');
     document.getElementById('btn-meal-tab').classList.remove('active');
@@ -253,6 +258,68 @@ function switchTab(tab) {
     } else {
         document.getElementById('btn-workout-tab').classList.add('active');
         document.getElementById('workout-tab').classList.remove('hidden');
+    }
+}
+
+function saveAppData() {
+    const data = {
+        age: document.getElementById('userAge').value,
+        weight: document.getElementById('userWeight').value,
+        height: document.getElementById('userHeight').value,
+        gender: document.getElementById('userGender').value,
+        activity: document.getElementById('userActivity').value,
+        goal: document.getElementById('userGoal').value,
+        proteinInput: document.getElementById('targetProteinInput').value,
+        mealFreq: document.getElementById('mealFrequency').value,
+        hasProtein: document.getElementById('hasProteinPowder').value,
+        meatStock: document.getElementById('meatStock').value,
+        carbStock: document.getElementById('carbStock').value,
+        eqBarbell: document.getElementById('eq-barbell').checked,
+        wtBarbell: document.getElementById('weight-barbell').value,
+        eqDb: document.getElementById('eq-db').checked,
+        wtDb: document.getElementById('weight-db').value,
+        eqPullup: document.getElementById('eq-pullup').checked,
+        wtPullup: document.getElementById('weight-pullup').value,
+        eqAb: document.getElementById('eq-ab').checked,
+        wtAb: document.getElementById('weight-ab').value,
+        extraGear: document.getElementById('extraEquipment').value,
+        globalCals: globalCals,
+        globalProtein: globalProtein
+    };
+    localStorage.setItem('bulkPrepData', JSON.stringify(data));
+}
+
+function loadSavedData() {
+    const saved = localStorage.getItem('bulkPrepData');
+    if (!saved) return;
+    try {
+        const data = JSON.parse(saved);
+        if(data.age) document.getElementById('userAge').value = data.age;
+        if(data.weight) document.getElementById('userWeight').value = data.weight;
+        if(data.height) document.getElementById('userHeight').value = data.height;
+        if(data.gender) document.getElementById('userGender').value = data.gender;
+        if(data.activity) document.getElementById('userActivity').value = data.activity;
+        if(data.goal) document.getElementById('userGoal').value = data.goal;
+        if(data.proteinInput) document.getElementById('targetProteinInput').value = data.proteinInput;
+        if(data.mealFreq) document.getElementById('mealFrequency').value = data.mealFreq;
+        if(data.hasProtein) document.getElementById('hasProteinPowder').value = data.hasProtein;
+        if(data.meatStock) document.getElementById('meatStock').value = data.meatStock;
+        if(data.carbStock) document.getElementById('carbStock').value = data.carbStock;
+        if(data.wtBarbell) document.getElementById('weight-barbell').value = data.wtBarbell;
+        if(data.wtDb) document.getElementById('weight-db').value = data.wtDb;
+        if(data.wtPullup) document.getElementById('weight-pullup').value = data.wtPullup;
+        if(data.wtAb) document.getElementById('weight-ab').value = data.wtAb;
+        if(data.extraGear) document.getElementById('extraEquipment').value = data.extraGear;
+        
+        if(data.eqBarbell !== undefined) document.getElementById('eq-barbell').checked = data.eqBarbell;
+        if(data.eqDb !== undefined) document.getElementById('eq-db').checked = data.eqDb;
+        if(data.eqPullup !== undefined) document.getElementById('eq-pullup').checked = data.eqPullup;
+        if(data.eqAb !== undefined) document.getElementById('eq-ab').checked = data.eqAb;
+        
+        if(data.globalCals) globalCals = data.globalCals;
+        if(data.globalProtein) globalProtein = data.globalProtein;
+    } catch(e) {
+        console.error("Error loading saved data", e);
     }
 }
 
@@ -279,8 +346,9 @@ function calculateProfile() {
     }
     
     globalProtein = customProtein;
+    saveAppData(); // Save to browser memory
 
-    alert(`Profile Calculated Successfully!\nTarget Calories: ${globalCals} kcal\nTarget Protein: ${globalProtein}g\n\nMoving to Meal Planner...`);
+    alert(`Profile Calculated & Saved!\nTarget Calories: ${globalCals} kcal\nTarget Protein: ${globalProtein}g\n\nMoving to Meal Planner...`);
     switchTab('meal');
 }
 
@@ -288,6 +356,8 @@ function generateMealPlan() {
     const hasProtein = document.getElementById('hasProteinPowder').value === 'yes';
     const freq = parseInt(document.getElementById('mealFrequency').value) || 6;
     
+    saveAppData(); // Save to browser memory
+
     let carbs = Math.round((globalCals * 0.38) / 4);
     let fats = Math.round((globalCals * 0.32) / 9);
     
@@ -340,6 +410,8 @@ function generateWorkoutPlan() {
     const dbWeight = document.getElementById('weight-db').value || '30';
     const barbellWeight = document.getElementById('weight-barbell').value || '80';
     const extraGear = document.getElementById('extraEquipment').value.trim();
+
+    saveAppData(); // Save to browser memory
 
     let html = `<p class="subtitle" style="margin-bottom: 15px;">Active Equipment Filters Applied | DB Max: ${dbWeight}kg | Barbell Max: ${barbellWeight}kg</p>`;
     if (extraGear) {
