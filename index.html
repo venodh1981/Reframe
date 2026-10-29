@@ -123,7 +123,7 @@
     <div id="meal-tab" class="hidden">
         <div class="card" id="meal-input-card">
             <h2>Phase 4: Ingredient & Meal Frequency Customizer</h2>
-            <p class="subtitle" style="margin-bottom: 15px;">Configure your daily meal frequency and inventory stock.</p>
+            <p class="subtitle" style="margin-bottom: 15px;">Configure your daily meal frequency and protein powder availability.</p>
             
             <div class="form-grid">
                 <div class="form-group">
@@ -135,8 +135,11 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Whey Protein Powder (Scoops left)</label>
-                    <input type="number" id="proteinScoops" value="12" min="0">
+                    <label>Do you have Whey Protein Powder?</label>
+                    <select id="hasProteinPowder">
+                        <option value="yes" selected>Yes (Use Protein Shakes)</option>
+                        <option value="no">No (Whole-Food Contingency Mode)</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Chicken / Mince Stock (kg)</label>
@@ -157,7 +160,7 @@
             </h2>
             
             <div id="contingency-alert" class="alert-box hidden">
-                ⚠️ <strong>Protein Powder Shortage Alert:</strong> Your whey powder inventory is low. Later meals have automatically swapped to whole-food alternatives.
+                ℹ️ <strong>Whole-Food Mode Active:</strong> Protein powder is disabled. Meal slots have automatically adjusted to whole-food protein alternatives.
             </div>
 
             <div class="macro-totals">
@@ -185,7 +188,7 @@
     <div id="workout-tab" class="hidden">
         <div class="card" id="workout-input-card">
             <h2>Phase 3 & 5: Equipment & Weight Inventory Builder</h2>
-            <p class="subtitle" style="margin-bottom: 15px;">Check your available gear and input your maximum weight loads.</p>
+            <p class="subtitle" style="margin-bottom: 15px;">Check your available gear, input weight loads, or add any extra equipment you own.</p>
             
             <div class="equipment-grid">
                 <div class="equipment-item">
@@ -198,12 +201,17 @@
                 </div>
                 <div class="equipment-item">
                     <label><input type="checkbox" id="eq-pullup" checked> Pull-Up Bar</label>
-                    <input type="text" id="weight-pullup" placeholder="Notes (e.g. Bodyweight)" value="Bodyweight">
+                    <input type="text" id="weight-pullup" placeholder="Notes" value="Bodyweight">
                 </div>
                 <div class="equipment-item">
                     <label><input type="checkbox" id="eq-ab" checked> Ab Roller</label>
                     <input type="text" id="weight-ab" placeholder="Notes" value="Standard">
                 </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
+                <label>Additional Equipment / Notes (e.g., Resistance Bands, Dip Station, Bench, Kettlebells)</label>
+                <input type="text" id="extraEquipment" placeholder="Type any extra gear here...">
             </div>
 
             <button type="button" onclick="generateWorkoutPlan()">Generate Equipment-Matched Workout</button>
@@ -252,7 +260,6 @@ function calculateProfile() {
     const activity = parseFloat(document.getElementById('userActivity').value) || 1.725;
     const goal = document.getElementById('userGoal').value;
 
-    // Mifflin-St Jeor BMR Equation
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
     bmr += (gender === 'male' ? 5 : -161);
 
@@ -260,7 +267,7 @@ function calculateProfile() {
 
     if (goal === 'muscle') {
         globalCals = Math.round(tdee + 350);
-        globalProtein = Math.round(weight * 2.2); // ~2.2g per kg
+        globalProtein = Math.round(weight * 2.2);
     } else if (goal === 'fatloss') {
         globalCals = Math.round(tdee - 450);
         globalProtein = Math.round(weight * 2.4);
@@ -274,7 +281,7 @@ function calculateProfile() {
 }
 
 function generateMealPlan() {
-    const scoops = parseInt(document.getElementById('proteinScoops').value) || 0;
+    const hasProtein = document.getElementById('hasProteinPowder').value === 'yes';
     const freq = parseInt(document.getElementById('mealFrequency').value) || 6;
     
     let carbs = Math.round((globalCals * 0.38) / 4);
@@ -285,21 +292,21 @@ function generateMealPlan() {
     document.getElementById('disp-carbs').innerText = carbs;
     document.getElementById('disp-fats').innerText = fats + 'g';
 
-    const isShortage = scoops <= 12;
     const alertBox = document.getElementById('contingency-alert');
     if (alertBox) {
-        if (isShortage) alertBox.classList.remove('hidden');
+        if (!hasProtein) alertBox.classList.remove('hidden');
         else alertBox.classList.add('hidden');
     }
 
-    let scaleFactor = globalCals / 3220;
     let html = '';
 
     for (let i = 1; i <= freq; i++) {
         let mealName = `Meal ${i}`;
         let desc = `Balanced Meal Slot ${i}: Lean protein source + quality complex carbs & healthy fats adjusted to your ${globalCals} kcal target.`;
-        if (i === 3 && isShortage) {
-            desc = `<strong>[Whole Food Swap]</strong> 4 Slices Brown Bread + Peanut Butter + Milk (Protein Powder Shortage Contingency)`;
+        if (i === 3 && !hasProtein) {
+            desc = `<strong>[Whole Food Swap]</strong> 4 Slices Brown Bread + Peanut Butter + Milk (Whole-Food Protein Mode)`;
+        } else if (i === 3 && hasProtein) {
+            desc = `Protein Shake & Peanuts: 2 Scoops Whey Protein + Milk + 50g Peanuts`;
         }
         html += `
             <tr>
@@ -328,8 +335,12 @@ function generateWorkoutPlan() {
     
     const dbWeight = document.getElementById('weight-db').value || '30';
     const barbellWeight = document.getElementById('weight-barbell').value || '80';
+    const extraGear = document.getElementById('extraEquipment').value.trim();
 
     let html = `<p class="subtitle" style="margin-bottom: 15px;">Active Equipment Filters Applied | DB Max: ${dbWeight}kg | Barbell Max: ${barbellWeight}kg</p>`;
+    if (extraGear) {
+        html += `<p class="subtitle" style="margin-bottom: 15px; color: var(--accent-gold);">Extra Gear Integrated: <strong>${extraGear}</strong></p>`;
+    }
     
     const days = [
         { day: 'Monday: Push (Chest, Shoulders, Triceps)', exercises: [
