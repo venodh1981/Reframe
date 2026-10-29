@@ -110,10 +110,14 @@
             <div class="form-group">
                 <label>Primary Goal Physique</label>
                 <select id="userGoal">
-                    <option value="muscle" selected>Muscle Gain / Bulking (+ Surplus)</option>
+                    <option value="muscle" selected>Muscle Gain / Bulking (+ Surplus ~3,220 kcal)</option>
                     <option value="maintenance">Maintenance / Body Recomp</option>
                     <option value="fatloss">Fat Loss / Cutting (- Deficit)</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Target Daily Protein (g)</label>
+                <input type="number" id="targetProteinInput" value="200">
             </div>
         </div>
         <button type="button" onclick="calculateProfile()">Calculate Targets & Proceed</button>
@@ -210,16 +214,16 @@
             </div>
 
             <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
-                <label>Additional Equipment / Notes (e.g., Resistance Bands, Dip Station, Bench, Kettlebells)</label>
+                <label>Additional Equipment / Notes (e.g., Resistance Bands, Bench, Dip Station)</label>
                 <input type="text" id="extraEquipment" placeholder="Type any extra gear here...">
             </div>
 
-            <button type="button" onclick="generateWorkoutPlan()">Generate Equipment-Matched Workout</button>
+            <button type="button" onclick="generateWorkoutPlan()">Generate 5-Day Workout Split</button>
         </div>
 
         <div class="card hidden" id="workout-plan-card">
             <h2>
-                <span>Generated Weekly Training Split</span>
+                <span>Generated 5-Day Weekly Training Split</span>
                 <button type="button" onclick="resetWorkoutForm()" style="font-size: 0.8rem; padding: 5px 10px;">Change Equipment</button>
             </h2>
             <div id="workout-content"></div>
@@ -259,6 +263,7 @@ function calculateProfile() {
     const gender = document.getElementById('userGender').value;
     const activity = parseFloat(document.getElementById('userActivity').value) || 1.725;
     const goal = document.getElementById('userGoal').value;
+    const customProtein = parseInt(document.getElementById('targetProteinInput').value) || 200;
 
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
     bmr += (gender === 'male' ? 5 : -161);
@@ -267,14 +272,13 @@ function calculateProfile() {
 
     if (goal === 'muscle') {
         globalCals = Math.round(tdee + 350);
-        globalProtein = Math.round(weight * 2.2);
     } else if (goal === 'fatloss') {
         globalCals = Math.round(tdee - 450);
-        globalProtein = Math.round(weight * 2.4);
     } else {
         globalCals = Math.round(tdee);
-        globalProtein = Math.round(weight * 2.0);
     }
+    
+    globalProtein = customProtein;
 
     alert(`Profile Calculated Successfully!\nTarget Calories: ${globalCals} kcal\nTarget Protein: ${globalProtein}g\n\nMoving to Meal Planner...`);
     switchTab('meal');
@@ -353,9 +357,20 @@ function generateWorkoutPlan() {
             { name: hasPullup ? 'Neutral-Grip Pull-Ups' : 'Dumbbell Pullovers', target: 'Lats', link: 'https://www.youtube.com/results?search_query=pull+ups+form' },
             { name: hasDB ? 'Dumbbell Concentration Curls' : 'Bodyweight Curls', target: 'Biceps', link: 'https://www.youtube.com/results?search_query=dumbbell+concentration+curls' }
         ]},
-        { day: 'Wednesday: Legs & Core', exercises: [
+        { day: 'Wednesday: Legs 1 (Quad Focus)', exercises: [
             { name: hasBarbell ? 'Front Barbell / Zercher Squats' : 'Goblet Squats', target: 'Quads', link: 'https://www.youtube.com/results?search_query=zercher+squat+form' },
+            { name: hasDB ? 'Dumbbell Bulgarian Split Squats' : 'Bodyweight Lunges', target: 'Quads & Glutes', link: 'https://www.youtube.com/results?search_query=bulgarian+split+squat' },
             { name: hasAb ? 'Ab Roller Rollouts' : 'Planks', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' }
+        ]},
+        { day: 'Thursday: Upper Hypertrophy', exercises: [
+            { name: hasDB ? 'Seated 70° Incline Press' : 'Push-ups', target: 'Upper Shelf', link: 'https://www.youtube.com/results?search_query=70+degree+incline+dumbbell+press' },
+            { name: hasDB ? 'Dumbbell Lateral Raises' : 'Arm Raises', target: 'Side Delts', link: 'https://www.youtube.com/results?search_query=dumbbell+lateral+raise' },
+            { name: hasBarbell ? 'Close-Grip Floor Press' : 'Diamond Push-ups', target: 'Triceps', link: 'https://www.youtube.com/results?search_query=close+grip+floor+press' }
+        ]},
+        { day: 'Friday: Legs 2 (Posterior Chain)', exercises: [
+            { name: hasBarbell ? 'Barbell Romanian Deadlifts (RDL)' : 'Dumbbell RDL', target: 'Hamstrings & Glutes', link: 'https://www.youtube.com/results?search_query=barbell+romanian+deadlift' },
+            { name: hasDB ? 'Dumbbell Single-Leg RDL' : 'Bodyweight Bridges', target: 'Hamstrings', link: 'https://www.youtube.com/results?search_query=single+leg+romanian+deadlift' },
+            { name: hasAb ? 'Ab Roller Rollouts' : 'Crunches', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' }
         ]}
     ];
 
