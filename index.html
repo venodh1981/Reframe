@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal BulkPrep & Workout Manager</title>
+    <style>
+        :root {
+            --bg-color: #121417;
+            --card-bg: #1c2128;
+            --border-color: #30363d;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-gold: #d4af37;
+            --accent-gold-hover: #e6c547;
+            --accent-orange: #e67e22;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; line-height: 1.5; }
+        .container { max-width: 950px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid var(--accent-gold); padding-bottom: 15px; }
+        h1 { font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); }
+        .subtitle { font-size: 0.9rem; color: var(--text-muted); margin-top: 5px; }
+        
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: #161b22; color: var(--text-muted); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: var(--accent-gold); color: #121417; border-color: var(--accent-gold); }
+
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        h2 { font-size: 1.2rem; color: var(--accent-gold); margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+        input, select { background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px; border-radius: 6px; font-size: 0.95rem; }
+        input:focus, select:focus { outline: none; border-color: var(--accent-gold); }
+        
+        button { background-color: var(--accent-gold); color: #121417; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; font-size: 0.95rem; }
+        button:hover { background-color: var(--accent-gold-hover); }
+        
+        .alert-box { background: rgba(230, 126, 34, 0.15); border: 1px solid var(--accent-orange); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; color: #f39c12; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        th { background-color: #161b22; color: var(--accent-gold); text-transform: uppercase; font-size: 0.8rem; }
+        tr:nth-child(even) td { background-color: rgba(255,255,255,0.02); }
+        
+        .macro-totals { display: flex; justify-content: space-around; background: #161b22; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-weight: bold; margin-bottom: 15px; text-align: center; }
+        .macro-totals div span { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: normal; }
+        
+        .equipment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
+        .equipment-item { background: var(--bg-color); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; }
+        .equipment-item label { display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: 500; cursor: pointer; margin-bottom: 8px; }
+        .equipment-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-gold); }
+
+        a.demo-link { color: var(--accent-gold); text-decoration: none; font-weight: 500; }
+        a.demo-link:hover { text-decoration: underline; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Universal BulkPrep & Workout Manager</h1>
+        <div class="subtitle">Personalized Profile, Dynamic Nutrition & Equipment-Matched Training</div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" id="btn-profile-tab" onclick="switchTab('profile')">1. Profile & Calculation</button>
+        <button class="tab-btn" id="btn-meal-tab" onclick="switchTab('meal')">2. Pantry & Meal Plan</button>
+        <button class="tab-btn" id="btn-workout-tab" onclick="switchTab('workout')">3. Equipment & Workout</button>
+    </div>
+
+    <!-- ================= PHASE 1 & 2: PROFILE & CALCULATION ENGINE ================= -->
+    <div id="profile-tab" class="card">
+        <h2>Phase 1 & 2: User Profile & Universal Calculation Core</h2>
+        <p class="subtitle" style="margin-bottom: 15px;">Input your metrics to automatically calculate your target daily calories and macronutrients.</p>
+        
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Age (Years)</label>
+                <input type="number" id="userAge" value="45">
+            </div>
+            <div class="form-group">
+                <label>Weight (kg)</label>
+                <input type="text" id="userWeight" value="78.5">
+            </div>
+            <div class="form-group">
+                <label>Height (cm)</label>
+                <input type="number" id="userHeight" value="175">
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select id="userGender">
+                    <option value="male" selected>Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Activity Level</label>
+                <select id="userActivity">
+                    <option value="1.2">Sedentary (Little/no exercise)</option>
+                    <option value="1.375">Light Exercise (1-3 days/week)</option>
+                    <option value="1.55">Moderate Exercise (3-5 days/week)</option>
+                    <option value="1.725" selected>Heavy Daily Training (6-7 days)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Primary Goal Physique</label>
+                <select id="userGoal">
+                    <option value="muscle" selected>Muscle Gain / Bulking (+ Surplus)</option>
+                    <option value="maintenance">Maintenance / Body Recomp</option>
+                    <option value="fatloss">Fat Loss / Cutting (- Deficit)</option>
+                </select>
+            </div>
+        </div>
+        <button type="button" onclick="calculateProfile()">Calculate Targets & Proceed</button>
+    </div>
+
+    <!-- ================= PHASE 4: PANTRY & MEAL PLAN ENGINE ================= -->
+    <div id="meal-tab" class="hidden">
+        <div class="card" id="meal-input-card">
+            <h2>Phase 4: Ingredient & Meal Frequency Customizer</h2>
+            <p class="subtitle" style="margin-bottom: 15px;">Configure your daily meal frequency and inventory stock.</p>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Meals Per Day</label>
+                    <select id="mealFrequency">
+                        <option value="4">4 Meals / Day</option>
+                        <option value="5">5 Meals / Day</option>
+                        <option value="6" selected>6 Meals / Day</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Whey Protein Powder (Scoops left)</label>
+                    <input type="number" id="proteinScoops" value="12" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Chicken / Mince Stock (kg)</label>
+                    <input type="text" id="meatStock" value="6.5">
+                </div>
+                <div class="form-group">
+                    <label>Carb Staple Stock (Rice/Maize kg)</label>
+                    <input type="text" id="carbStock" value="5.0">
+                </div>
+            </div>
+            <button type="button" onclick="generateMealPlan()">Generate Scaled Meal Plan</button>
+        </div>
+
+        <div class="card hidden" id="meal-plan-card">
+            <h2>
+                <span>Generated Custom Meal Plan</span>
+                <button type="button" onclick="resetMealForm()" style="font-size: 0.8rem; padding: 5px 10px;">Edit Inputs</button>
+            </h2>
+            
+            <div id="contingency-alert" class="alert-box hidden">
+                ⚠️ <strong>Protein Powder Shortage Alert:</strong> Your whey powder inventory is low. Later meals have automatically swapped to whole-food alternatives.
+            </div>
+
+            <div class="macro-totals">
+                <div><span id="disp-cals">3,220</span> kcal<span>Target Calories</span></div>
+                <div><span id="disp-protein">200</span>g<span>Target Protein</span></div>
+                <div><span id="disp-carbs">295</span>g<span>Target Carbs</span></div>
+                <div><span id="disp-fats">125g</span><span>Target Fats</span></div>
+            </div>
+
+            <h3 style="font-size: 1rem; color: var(--accent-gold); margin-bottom: 10px;" id="schedule-title">Daily Meal Schedule</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Meal Slot</th>
+                        <th>Primary Food & Quantities</th>
+                        <th>Estimated Macros</th>
+                    </tr>
+                </thead>
+                <tbody id="meal-table-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= PHASE 3 & 5: EQUIPMENT & WORKOUT ENGINE ================= -->
+    <div id="workout-tab" class="hidden">
+        <div class="card" id="workout-input-card">
+            <h2>Phase 3 & 5: Equipment & Weight Inventory Builder</h2>
+            <p class="subtitle" style="margin-bottom: 15px;">Check your available gear and input your maximum weight loads.</p>
+            
+            <div class="equipment-grid">
+                <div class="equipment-item">
+                    <label><input type="checkbox" id="eq-barbell" checked> Barbell & Plates</label>
+                    <input type="text" id="weight-barbell" placeholder="Max weight (kg)" value="80">
+                </div>
+                <div class="equipment-item">
+                    <label><input type="checkbox" id="eq-db" checked> Dumbbells</label>
+                    <input type="text" id="weight-db" placeholder="Max per DB (kg)" value="30">
+                </div>
+                <div class="equipment-item">
+                    <label><input type="checkbox" id="eq-pullup" checked> Pull-Up Bar</label>
+                    <input type="text" id="weight-pullup" placeholder="Notes (e.g. Bodyweight)" value="Bodyweight">
+                </div>
+                <div class="equipment-item">
+                    <label><input type="checkbox" id="eq-ab" checked> Ab Roller</label>
+                    <input type="text" id="weight-ab" placeholder="Notes" value="Standard">
+                </div>
+            </div>
+
+            <button type="button" onclick="generateWorkoutPlan()">Generate Equipment-Matched Workout</button>
+        </div>
+
+        <div class="card hidden" id="workout-plan-card">
+            <h2>
+                <span>Generated Weekly Training Split</span>
+                <button type="button" onclick="resetWorkoutForm()" style="font-size: 0.8rem; padding: 5px 10px;">Change Equipment</button>
+            </h2>
+            <div id="workout-content"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let globalCals = 3220;
+let globalProtein = 200;
+
+function switchTab(tab) {
+    document.getElementById('btn-profile-tab').classList.remove('active');
+    document.getElementById('btn-meal-tab').classList.remove('active');
+    document.getElementById('btn-workout-tab').classList.remove('active');
+    
+    document.getElementById('profile-tab').classList.add('hidden');
+    document.getElementById('meal-tab').classList.add('hidden');
+    document.getElementById('workout-tab').classList.add('hidden');
+
+    if(tab === 'profile') {
+        document.getElementById('btn-profile-tab').classList.add('active');
+        document.getElementById('profile-tab').classList.remove('hidden');
+    } else if(tab === 'meal') {
+        document.getElementById('btn-meal-tab').classList.add('active');
+        document.getElementById('meal-tab').classList.remove('hidden');
+    } else {
+        document.getElementById('btn-workout-tab').classList.add('active');
+        document.getElementById('workout-tab').classList.remove('hidden');
+    }
+}
+
+function calculateProfile() {
+    const age = parseFloat(document.getElementById('userAge').value) || 45;
+    const weight = parseFloat(document.getElementById('userWeight').value.replace(',', '.')) || 78.5;
+    const height = parseFloat(document.getElementById('userHeight').value) || 175;
+    const gender = document.getElementById('userGender').value;
+    const activity = parseFloat(document.getElementById('userActivity').value) || 1.725;
+    const goal = document.getElementById('userGoal').value;
+
+    // Mifflin-St Jeor BMR Equation
+    let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+    bmr += (gender === 'male' ? 5 : -161);
+
+    let tdee = bmr * activity;
+
+    if (goal === 'muscle') {
+        globalCals = Math.round(tdee + 350);
+        globalProtein = Math.round(weight * 2.2); // ~2.2g per kg
+    } else if (goal === 'fatloss') {
+        globalCals = Math.round(tdee - 450);
+        globalProtein = Math.round(weight * 2.4);
+    } else {
+        globalCals = Math.round(tdee);
+        globalProtein = Math.round(weight * 2.0);
+    }
+
+    alert(`Profile Calculated Successfully!\nTarget Calories: ${globalCals} kcal\nTarget Protein: ${globalProtein}g\n\nMoving to Meal Planner...`);
+    switchTab('meal');
+}
+
+function generateMealPlan() {
+    const scoops = parseInt(document.getElementById('proteinScoops').value) || 0;
+    const freq = parseInt(document.getElementById('mealFrequency').value) || 6;
+    
+    let carbs = Math.round((globalCals * 0.38) / 4);
+    let fats = Math.round((globalCals * 0.32) / 9);
+    
+    document.getElementById('disp-cals').innerText = globalCals;
+    document.getElementById('disp-protein').innerText = globalProtein;
+    document.getElementById('disp-carbs').innerText = carbs;
+    document.getElementById('disp-fats').innerText = fats + 'g';
+
+    const isShortage = scoops <= 12;
+    const alertBox = document.getElementById('contingency-alert');
+    if (alertBox) {
+        if (isShortage) alertBox.classList.remove('hidden');
+        else alertBox.classList.add('hidden');
+    }
+
+    let scaleFactor = globalCals / 3220;
+    let html = '';
+
+    for (let i = 1; i <= freq; i++) {
+        let mealName = `Meal ${i}`;
+        let desc = `Balanced Meal Slot ${i}: Lean protein source + quality complex carbs & healthy fats adjusted to your ${globalCals} kcal target.`;
+        if (i === 3 && isShortage) {
+            desc = `<strong>[Whole Food Swap]</strong> 4 Slices Brown Bread + Peanut Butter + Milk (Protein Powder Shortage Contingency)`;
+        }
+        html += `
+            <tr>
+                <td><strong>${mealName}</strong></td>
+                <td>${desc}</td>
+                <td>~${Math.round(globalCals / freq)} kcal<br>P: ~${Math.round(globalProtein / freq)}g</td>
+            </tr>
+        `;
+    }
+    
+    document.getElementById('meal-table-body').innerHTML = html;
+    document.getElementById('meal-input-card').classList.add('hidden');
+    document.getElementById('meal-plan-card').classList.remove('hidden');
+}
+
+function resetMealForm() {
+    document.getElementById('meal-plan-card').classList.add('hidden');
+    document.getElementById('meal-input-card').classList.remove('hidden');
+}
+
+function generateWorkoutPlan() {
+    const hasBarbell = document.getElementById('eq-barbell').checked;
+    const hasDB = document.getElementById('eq-db').checked;
+    const hasPullup = document.getElementById('eq-pullup').checked;
+    const hasAb = document.getElementById('eq-ab').checked;
+    
+    const dbWeight = document.getElementById('weight-db').value || '30';
+    const barbellWeight = document.getElementById('weight-barbell').value || '80';
+
+    let html = `<p class="subtitle" style="margin-bottom: 15px;">Active Equipment Filters Applied | DB Max: ${dbWeight}kg | Barbell Max: ${barbellWeight}kg</p>`;
+    
+    const days = [
+        { day: 'Monday: Push (Chest, Shoulders, Triceps)', exercises: [
+            { name: hasBarbell ? `Incline Barbell Bench (${barbellWeight}kg max)` : 'Incline Dumbbell Press', target: 'Upper Chest', link: 'https://www.youtube.com/results?search_query=incline+barbell+bench+press' },
+            { name: hasDB ? `Flat Dumbbell Press (${dbWeight}kg per DB)` : 'Push-ups', target: 'Mid Chest', link: 'https://www.youtube.com/results?search_query=flat+dumbbell+press' },
+            { name: hasDB ? 'Seated Dumbbell Shoulder Press' : 'Pike Push-ups', target: 'Delts', link: 'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press' }
+        ]},
+        { day: 'Tuesday: Pull (Back & Biceps)', exercises: [
+            { name: hasBarbell ? 'Overhand Bent-Over Barbell Row' : 'Dumbbell Bent-Over Row', target: 'Upper Back', link: 'https://www.youtube.com/results?search_query=bent+over+barbell+row' },
+            { name: hasPullup ? 'Neutral-Grip Pull-Ups' : 'Dumbbell Pullovers', target: 'Lats', link: 'https://www.youtube.com/results?search_query=pull+ups+form' },
+            { name: hasDB ? 'Dumbbell Concentration Curls' : 'Bodyweight Curls', target: 'Biceps', link: 'https://www.youtube.com/results?search_query=dumbbell+concentration+curls' }
+        ]},
+        { day: 'Wednesday: Legs & Core', exercises: [
+            { name: hasBarbell ? 'Front Barbell / Zercher Squats' : 'Goblet Squats', target: 'Quads', link: 'https://www.youtube.com/results?search_query=zercher+squat+form' },
+            { name: hasAb ? 'Ab Roller Rollouts' : 'Planks', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' }
+        ]}
+    ];
+
+    days.forEach(d => {
+        html += `<h3 style="font-size: 1rem; color: var(--accent-gold); margin-top: 15px; margin-bottom: 5px;">${d.day}</h3>`;
+        html += `<table><thead><tr><th>Exercise & Load</th><th>Target Muscle</th><th>Video Demo</th></tr></thead><tbody>`;
+        d.exercises.forEach(ex => {
+            html += `<tr><td>${ex.name}</td><td>${ex.target}</td><td><a class="demo-link" href="${ex.link}" target="_blank">Watch Demo ↗</a></td></tr>`;
+        });
+        html += `</tbody></table>`;
+    });
+
+    document.getElementById('workout-content').innerHTML = html;
+    document.getElementById('workout-input-card').classList.add('hidden');
+    document.getElementById('workout-plan-card').classList.remove('hidden');
+}
+
+function resetWorkoutForm() {
+    document.getElementById('workout-plan-card').classList.add('hidden');
+    document.getElementById('workout-input-card').classList.remove('hidden');
+}
+</script>
+
+</body>
+</html>
