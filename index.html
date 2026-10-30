@@ -39,6 +39,7 @@
         button:hover { background-color: var(--accent-gold-hover); }
         
         .alert-box { background: rgba(230, 126, 34, 0.15); border: 1px solid var(--accent-orange); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; color: #f39c12; }
+        .liability-box { background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent-gold); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.85rem; color: var(--text-main); }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
         th, td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
@@ -96,7 +97,7 @@
                 <select id="userGender">
                     <option value="male" selected>Male</option>
                     <option value="female">Female (Standard)</option>
-                    <option value="pregnant">Female (Pregnancy-Friendly Mode)</option>
+                    <option value="pregnant">Female (Strictly Safe Prenatal Mode)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -193,7 +194,7 @@
     <div id="workout-tab" class="hidden">
         <div class="card" id="workout-input-card">
             <h2>Phase 3 & 5: Equipment, Duration & Workout Length Builder</h2>
-            <p class="subtitle" style="margin-bottom: 15px;">Configure your gear, duration preference, and session depth.</p>
+            <p class="subtitle" style="margin-bottom: 15px;">Check individual equipment, input exact weight loads, and choose session depth.</p>
             
             <div class="form-grid" style="margin-bottom: 15px;">
                 <div class="form-group">
@@ -216,7 +217,7 @@
                 </div>
                 <div class="equipment-item">
                     <label><input type="checkbox" id="eq-pullup" checked> Pull-Up Bar</label>
-                    <input type="text" id="weight-pullup" placeholder="Notes" value="Bodyweight">
+                    <input type="text" id="weight-pullup" placeholder="Notes (e.g. Bodyweight)" value="Bodyweight">
                 </div>
                 <div class="equipment-item">
                     <label><input type="checkbox" id="eq-ab" checked> Ab Roller</label>
@@ -416,106 +417,110 @@ function resetMealForm() {
 
 function generateWorkoutPlan() {
     const hasBarbell = document.getElementById('eq-barbell').checked;
+    const barbellWt = document.getElementById('weight-barbell').value || '80';
+    
     const hasDB = document.getElementById('eq-db').checked;
+    const dbWt = document.getElementById('weight-db').value || '30';
+    
     const hasPullup = document.getElementById('eq-pullup').checked;
+    const pullupNotes = document.getElementById('weight-pullup').value || 'Bodyweight';
+    
     const hasAb = document.getElementById('eq-ab').checked;
+    const abNotes = document.getElementById('weight-ab').value || 'Standard';
+    
     const isPregnant = document.getElementById('userGender').value === 'pregnant';
     const lengthMode = document.getElementById('workoutLength').value;
-    
-    const dbWeight = document.getElementById('weight-db').value || '30';
-    const barbellWeight = document.getElementById('weight-barbell').value || '80';
     const extraGear = document.getElementById('extraEquipment').value.trim();
 
     saveAppData();
 
-    let durationText = lengthMode === 'extended' ? 'Estimated Duration: ~75–90 Mins (Detailed Session with Warm-Up & Accessories)' : 'Estimated Duration: ~45–50 Mins (Standard Core Session)';
-    let html = `<p class="subtitle" style="margin-bottom: 10px;">${durationText}</p>`;
-    html += `<p class="subtitle" style="margin-bottom: 15px;">Active Equipment Filters | DB Max: ${dbWeight}kg | Barbell Max: ${barbellWeight}kg</p>`;
-    
+    let html = ``;
     if (isPregnant) {
-        html += `<div class="alert-box">🤰 <strong>Pregnancy-Friendly Mode Active:</strong> Routines have automatically substituted heavy axial loading and deep abdominal strain with joint-safe, stability-focused movements.</div>`;
+        html += `<div class="liability-box">⚠️ <strong>STRICTLY SAFE PRENATAL DISCLAIMER:</strong> This routine is engineered exclusively for low-risk pregnancies with medical clearance. It completely excludes heavy axial loading, high-fall risks, breath-holding (Valsalva), deep core-coning abdominal strain, and overheating. Always stop immediately if you feel dizzy, short of breath, or experience discomfort.</div>`;
     }
+    
     if (extraGear) {
         html += `<p class="subtitle" style="margin-bottom: 15px; color: var(--accent-gold);">Extra Gear Integrated: <strong>${extraGear}</strong></p>`;
     }
     
-    // Define standard vs extended days
     let days = [];
 
     if (isPregnant) {
+        let duration = lengthMode === 'extended' ? '⏱️ Estimated Duration: ~60 Mins (Low-Impact Prenatal Strength & Mobility)' : '⏱️ Estimated Duration: ~35–45 Mins (Safe Prenatal Maintenance)';
         days = [
-            { day: 'Monday: Upper Body & Posture Stability', exercises: [
-                { name: 'Seated Dumbbell Shoulder Press (Light)', target: 'Shoulders', link: 'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press' },
-                { name: 'Incline Dumbbell Bench Press (Supported)', target: 'Chest', link: 'https://www.youtube.com/results?search_query=incline+dumbbell+press' },
-                { name: 'Dumbbell Bent-Over Row (Supported on Bench)', target: 'Upper Back', link: 'https://www.youtube.com/results?search_query=dumbbell+bent+over+row' },
+            { day: `Monday: Upper Body & Postures | ${duration}`, exercises: [
+                { name: hasDB ? `Seated Dumbbell Shoulder Press (${dbWt}kg max, Light)` : 'Seated Arm Raises', target: 'Shoulders & Posture', link: 'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press' },
+                { name: hasDB ? `Incline Dumbbell Bench Press (${dbWt}kg, Supported 30°)` : 'Incline Wall Push-ups', target: 'Chest Support', link: 'https://www.youtube.com/results?search_query=incline+dumbbell+press' },
+                { name: hasDB ? `Supported Dumbbell Row (${dbWt}kg on bench)` : 'Resistance Band Rows', target: 'Upper Back Support', link: 'https://www.youtube.com/results?search_query=supported+dumbbell+row' },
                 ...(lengthMode === 'extended' ? [
-                    { name: 'Resistance Band Pull-Aparts', target: 'Rear Delts & Posture', link: 'https://www.youtube.com/results?search_query=resistance+band+pull+aparts' },
-                    { name: 'Dumbbell Bicep Curls (Seated)', target: 'Arms', link: 'https://www.youtube.com/results?search_query=seated+dumbbell+bicep+curl' }
+                    { name: 'Resistance Band Lateral Pull-Downs / Pull-Aparts', target: 'Upper Back & Scapula', link: 'https://www.youtube.com/results?search_query=resistance+band+pull+aparts' },
+                    { name: hasDB ? `Seated Dumbbell Bicep Curls (${dbWt}kg)` : 'Bodyweight Curls', target: 'Arms', link: 'https://www.youtube.com/results?search_query=seated+dumbbell+bicep+curl' }
                 ] : [])
             ]},
-            { day: 'Wednesday: Lower Body & Glute Strength', exercises: [
-                { name: 'Goblet Squats to Box / Bench', target: 'Quads & Glutes', link: 'https://www.youtube.com/results?search_query=goblet+squat+to+box' },
-                { name: 'Bodyweight / Light Dumbbell Glute Bridges', target: 'Glutes & Lower Back', link: 'https://www.youtube.com/results?search_query=glute+bridges+form' },
-                { name: 'Side-Lying Clamshells with Band', target: 'Hip Stability', link: 'https://www.youtube.com/results?search_query=clam+shells+exercise' },
+            { day: `Wednesday: Lower Body Stability & Glutes | ${duration}`, exercises: [
+                { name: 'Goblet Squats to Box / Chair (Supported)', target: 'Quads & Pelvic Support', link: 'https://www.youtube.com/results?search_query=goblet+squat+to+box' },
+                { name: 'Bodyweight / Supported Glute Bridges (No heavy weight)', target: 'Glutes & Lower Back', link: 'https://www.youtube.com/results?search_query=glute+bridges+form' },
+                { name: 'Side-Lying Clamshells (Band optional)', target: 'Hip Stability & Pelvic Girdle', link: 'https://www.youtube.com/results?search_query=clam+shells+exercise' },
                 ...(lengthMode === 'extended' ? [
-                    { name: 'Supported Wall Sit', target: 'Quad Endurance', link: 'https://www.youtube.com/results?search_query=wall+sit+form' },
-                    { name: 'Standing Calf Raises', target: 'Calves & Circulation', link: 'https://www.youtube.com/results?search_query=standing+calf+raises' }
+                    { name: 'Wall Sit (Short Holds, Safe Pressure)', target: 'Quad & Leg Endurance', link: 'https://www.youtube.com/results?search_query=wall+sit+form' },
+                    { name: 'Seated Calf Raises', target: 'Lower Leg Circulation', link: 'https://www.youtube.com/results?search_query=seated+calf+raises' }
                 ] : [])
             ]},
-            { day: 'Friday: Gentle Mobility & Core Protection', exercises: [
-                { name: 'Cat-Cow Spinal Mobility Stretch', target: 'Spine & Back Relief', link: 'https://www.youtube.com/results?search_query=cat+cow+stretch' },
-                { name: 'Modified Bird-Dog (All Fours)', target: 'Transverse Abdominis & Core', link: 'https://www.youtube.com/results?search_query=bird+dog+exercise' },
-                { name: 'Incline Wall Push-Ups', target: 'Chest & Arms', link: 'https://www.youtube.com/results?search_query=wall+push+ups' },
+            { day: `Friday: Gentle Mobility & Transverse Core | ${duration}`, exercises: [
+                { name: 'Cat-Cow Spinal Mobility (Gentle Range)', target: 'Spine Relief', link: 'https://www.youtube.com/results?search_query=cat+cow+stretch' },
+                { name: 'Modified Bird-Dog on All Fours (No Over-Extension)', target: 'Deep Core / Transverse Abdominis', link: 'https://www.youtube.com/results?search_query=bird+dog+exercise' },
+                { name: 'Incline Wall Push-Ups', target: 'Chest & Arms Stability', link: 'https://www.youtube.com/results?search_query=wall+push+ups' },
                 ...(lengthMode === 'extended' ? [
-                    { name: 'Seated Hip Flexor & Glute Stretches', target: 'Flexibility', link: 'https://www.youtube.com/results?search_query=seated+glute+stretch' }
+                    { name: 'Seated Butterfly Stretch & Hip Mobility', target: 'Pelvic Flexibility', link: 'https://www.youtube.com/results?search_query=seated+butterfly+stretch' }
                 ] : [])
             ]}
         ];
     } else {
-        // Standard 5-Day Split
+        // Standard 5-Day Split with custom weights displayed
+        let duration = lengthMode === 'extended' ? '⏱️ Estimated Duration: ~75–90 Mins (Detailed Hypertrophy Session)' : '⏱️ Estimated Duration: ~45–50 Mins (Standard Session)';
         days = [
-            { day: 'Monday: Push (Chest, Shoulders, Triceps)', exercises: [
-                { name: hasBarbell ? `Incline Barbell Bench (${barbellWeight}kg max)` : 'Incline Dumbbell Press', target: 'Upper Chest', link: 'https://www.youtube.com/results?search_query=incline+barbell+bench+press' },
-                { name: hasDB ? `Flat Dumbbell Press (${dbWeight}kg per DB)` : 'Push-ups', target: 'Mid Chest', link: 'https://www.youtube.com/results?search_query=flat+dumbbell+press' },
-                { name: hasDB ? 'Seated Dumbbell Shoulder Press' : 'Pike Push-ups', target: 'Delts', link: 'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press' },
+            { day: `Monday: Push (Chest, Shoulders, Triceps) | ${duration}`, exercises: [
+                { name: hasBarbell ? `Incline Barbell Bench (${barbellWt}kg max)` : 'Incline Dumbbell Press', target: 'Upper Chest', link: 'https://www.youtube.com/results?search_query=incline+barbell+bench+press' },
+                { name: hasDB ? `Flat Dumbbell Press (${dbWt}kg per DB)` : 'Push-ups', target: 'Mid Chest', link: 'https://www.youtube.com/results?search_query=flat+dumbbell+press' },
+                { name: hasDB ? `Seated Dumbbell Shoulder Press (${dbWt}kg)` : 'Pike Push-ups', target: 'Delts', link: 'https://www.youtube.com/results?search_query=seated+dumbbell+shoulder+press' },
                 ...(lengthMode === 'extended' ? [
-                    { name: hasDB ? 'Dumbbell Lateral Raises (Strict)' : 'Arm Raises', target: 'Side Delts', link: 'https://www.youtube.com/results?search_query=dumbbell+lateral+raise' },
-                    { name: hasBarbell ? 'Close-Grip Floor Press' : 'Diamond Push-ups', target: 'Triceps', link: 'https://www.youtube.com/results?search_query=close+grip+floor+press' }
+                    { name: hasDB ? `Dumbbell Lateral Raises (${dbWt}kg max)` : 'Arm Raises', target: 'Side Delts', link: 'https://www.youtube.com/results?search_query=dumbbell+lateral+raise' },
+                    { name: hasBarbell ? `Close-Grip Floor Press (${barbellWt}kg)` : 'Diamond Push-ups', target: 'Triceps', link: 'https://www.youtube.com/results?search_query=close+grip+floor+press' }
                 ] : [])
             ]},
-            { day: 'Tuesday: Pull (Back & Biceps)', exercises: [
-                { name: hasBarbell ? 'Overhand Bent-Over Barbell Row' : 'Dumbbell Bent-Over Row', target: 'Upper Back', link: 'https://www.youtube.com/results?search_query=bent+over+barbell+row' },
-                { name: hasPullup ? 'Neutral-Grip Pull-Ups' : 'Dumbbell Pullovers', target: 'Lats', link: 'https://www.youtube.com/results?search_query=pull+ups+form' },
-                { name: hasDB ? 'Dumbbell Concentration Curls' : 'Bodyweight Curls', target: 'Biceps', link: 'https://www.youtube.com/results?search_query=dumbbell+concentration+curls' },
+            { day: `Tuesday: Pull (Back & Biceps) | ${duration}`, exercises: [
+                { name: hasBarbell ? `Overhand Bent-Over Barbell Row (${barbellWt}kg)` : 'Dumbbell Bent-Over Row', target: 'Upper Back', link: 'https://www.youtube.com/results?search_query=bent+over+barbell+row' },
+                { name: hasPullup ? `Neutral-Grip Pull-Ups (${pullupNotes})` : 'Dumbbell Pullovers', target: 'Lats', link: 'https://www.youtube.com/results?search_query=pull+ups+form' },
+                { name: hasDB ? `Dumbbell Concentration Curls (${dbWt}kg)` : 'Bodyweight Curls', target: 'Biceps', link: 'https://www.youtube.com/results?search_query=dumbbell+concentration+curls' },
                 ...(lengthMode === 'extended' ? [
-                    { name: hasBarbell ? 'Barbell Shrugs' : 'Dumbbell Shrugs', target: 'Traps', link: 'https://www.youtube.com/results?search_query=barbell+shrugs' },
-                    { name: hasDB ? 'Incline Dumbbell Hammer Curls' : 'Reverse Curls', target: 'Brachialis', link: 'https://www.youtube.com/results?search_query=incline+dumbbell+hammer+curls' }
+                    { name: hasBarbell ? `Barbell Shrugs (${barbellWt}kg)` : 'Dumbbell Shrugs', target: 'Traps', link: 'https://www.youtube.com/results?search_query=barbell+shrugs' },
+                    { name: hasDB ? `Incline Dumbbell Hammer Curls (${dbWt}kg)` : 'Reverse Curls', target: 'Brachialis', link: 'https://www.youtube.com/results?search_query=incline+dumbbell+hammer+curls' }
                 ] : [])
             ]},
-            { day: 'Wednesday: Legs 1 (Quad Focus)', exercises: [
-                { name: hasBarbell ? 'Front Barbell / Zercher Squats' : 'Goblet Squats', target: 'Quads', link: 'https://www.youtube.com/results?search_query=zercher+squat+form' },
-                { name: hasDB ? 'Dumbbell Bulgarian Split Squats' : 'Bodyweight Lunges', target: 'Quads & Glutes', link: 'https://www.youtube.com/results?search_query=bulgarian+split+squat' },
-                { name: hasAb ? 'Ab Roller Rollouts' : 'Planks', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' },
+            { day: `Wednesday: Legs 1 (Quad Focus) | ${duration}`, exercises: [
+                { name: hasBarbell ? `Front Barbell / Zercher Squats (${barbellWt}kg)` : 'Goblet Squats', target: 'Quads', link: 'https://www.youtube.com/results?search_query=zercher+squat+form' },
+                { name: hasDB ? `Dumbbell Bulgarian Split Squats (${dbWt}kg)` : 'Bodyweight Lunges', target: 'Quads & Glutes', link: 'https://www.youtube.com/results?search_query=bulgarian+split+squat' },
+                { name: hasAb ? `Ab Roller Rollouts (${abNotes})` : 'Planks', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' },
                 ...(lengthMode === 'extended' ? [
                     { name: 'Bodyweight Walking Lunges', target: 'Quad Burnout', link: 'https://www.youtube.com/results?search_query=walking+lunges' },
                     { name: 'Standing Calf Raises with Weights', target: 'Calves', link: 'https://www.youtube.com/results?search_query=standing+calf+raises' }
                 ] : [])
             ]},
-            { day: 'Thursday: Upper Hypertrophy', exercises: [
-                { name: hasDB ? 'Seated 70° Incline Press' : 'Push-ups', target: 'Upper Shelf', link: 'https://www.youtube.com/results?search_query=70+degree+incline+dumbbell+press' },
-                { name: hasDB ? 'Dumbbell Lateral Raises' : 'Arm Raises', target: 'Side Delts', link: 'https://www.youtube.com/results?search_query=dumbbell+lateral+raise' },
-                { name: hasBarbell ? 'Close-Grip Floor Press' : 'Diamond Push-ups', target: 'Triceps', link: 'https://www.youtube.com/results?search_query=close+grip+floor+press' },
+            { day: `Thursday: Upper Hypertrophy | ${duration}`, exercises: [
+                { name: hasDB ? `Seated 70° Incline Press (${dbWt}kg)` : 'Push-ups', target: 'Upper Shelf', link: 'https://www.youtube.com/results?search_query=70+degree+incline+dumbbell+press' },
+                { name: hasDB ? `Dumbbell Lateral Raises (${dbWt}kg)` : 'Arm Raises', target: 'Side Delts', link: 'https://www.youtube.com/results?search_query=dumbbell+lateral+raise' },
+                { name: hasBarbell ? `Close-Grip Floor Press (${barbellWt}kg)` : 'Diamond Push-ups', target: 'Triceps', link: 'https://www.youtube.com/results?search_query=close+grip+floor+press' },
                 ...(lengthMode === 'extended' ? [
-                    { name: hasBarbell ? 'Barbell Bicep Curls' : 'Dumbbell Hammer Curls', target: 'Biceps', link: 'https://www.youtube.com/results?search_query=barbell+bicep+curl' },
-                    { name: hasAb ? 'Weighted Decline Crunches' : 'Leg Raises', target: 'Core', link: 'https://www.youtube.com/results?search_query=hanging+leg+raises' }
+                    { name: hasBarbell ? `Barbell Bicep Curls (${barbellWt}kg)` : 'Dumbbell Hammer Curls', target: 'Biceps', link: 'https://www.youtube.com/results?search_query=barbell+bicep+curl' },
+                    { name: hasAb ? `Weighted Ab Roller (${abNotes})` : 'Leg Raises', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' }
                 ] : [])
             ]},
-            { day: 'Friday: Legs 2 (Posterior Chain)', exercises: [
-                { name: hasBarbell ? 'Barbell Romanian Deadlifts (RDL)' : 'Dumbbell RDL', target: 'Hamstrings & Glutes', link: 'https://www.youtube.com/results?search_query=barbell+romanian+deadlift' },
-                { name: hasDB ? 'Dumbbell Single-Leg RDL' : 'Bodyweight Bridges', target: 'Hamstrings', link: 'https://www.youtube.com/results?search_query=single+leg+romanian+deadlift' },
-                { name: hasAb ? 'Ab Roller Rollouts' : 'Crunches', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' },
+            { day: `Friday: Legs 2 (Posterior Chain) | ${duration}`, exercises: [
+                { name: hasBarbell ? `Barbell Romanian Deadlifts (${barbellWt}kg)` : 'Dumbbell RDL', target: 'Hamstrings & Glutes', link: 'https://www.youtube.com/results?search_query=barbell+romanian+deadlift' },
+                { name: hasDB ? `Dumbbell Single-Leg RDL (${dbWt}kg)` : 'Bodyweight Bridges', target: 'Hamstrings', link: 'https://www.youtube.com/results?search_query=single+leg+romanian+deadlift' },
+                { name: hasAb ? `Ab Roller Rollouts (${abNotes})` : 'Crunches', target: 'Core', link: 'https://www.youtube.com/results?search_query=ab+wheel+rollout' },
                 ...(lengthMode === 'extended' ? [
-                    { name: hasBarbell ? 'Barbell Hip Thrusts' : 'Dumbbell Glute Bridges', target: 'Glutes', link: 'https://www.youtube.com/results?search_query=barbell+hip+thrust' },
+                    { name: hasBarbell ? `Barbell Hip Thrusts (${barbellWt}kg)` : 'Dumbbell Glute Bridges', target: 'Glutes', link: 'https://www.youtube.com/results?search_query=barbell+hip+thrust' },
                     { name: 'Seated Hamstring Stretches & Mobility', target: 'Recovery', link: 'https://www.youtube.com/results?search_query=hamstring+stretches' }
                 ] : [])
             ]}
@@ -524,7 +529,7 @@ function generateWorkoutPlan() {
 
     days.forEach(d => {
         html += `<h3 style="font-size: 1rem; color: var(--accent-gold); margin-top: 15px; margin-bottom: 5px;">${d.day}</h3>`;
-        html += `<table><thead><tr><th>Exercise & Load</th><th>Target Muscle</th><th>Video Demo</th></tr></thead><tbody>`;
+        html += `<table><thead><tr><th>Exercise & Weight Load</th><th>Target Muscle</th><th>Video Demo</th></tr></thead><tbody>`;
         d.exercises.forEach(ex => {
             html += `<tr><td>${ex.name}</td><td>${ex.target}</td><td><a class="demo-link" href="${ex.link}" target="_blank">Watch Demo ↗</a></td></tr>`;
         });
