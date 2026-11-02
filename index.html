@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Universal BulkPrep & Workout Manager</title>
-    <!-- Include html2pdf library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -43,7 +42,6 @@
         .btn-pdf { background-color: #238636; color: white; margin-left: 10px; font-size: 0.8rem; padding: 6px 12px; }
         .btn-pdf:hover { background-color: #2ea043; }
         
-        .alert-box { background: rgba(230, 126, 34, 0.15); border: 1px solid var(--accent-orange); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; color: #f39c12; }
         .liability-box { background: rgba(255, 85, 85, 0.1); border: 1px solid var(--accent-red); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.85rem; color: #ff8888; }
         .liability-check { display: flex; align-items: center; gap: 8px; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 6px; border: 1px solid var(--accent-red); }
         .liability-check input { width: 18px; height: 18px; accent-color: var(--accent-red); }
@@ -55,18 +53,11 @@
         
         .macro-totals { display: flex; justify-content: space-around; background: #161b22; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-weight: bold; margin-bottom: 15px; text-align: center; }
         .macro-totals div span { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: normal; }
-        
-        .equipment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
-        .equipment-item { background: var(--bg-color); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; }
-        .equipment-item label { display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: 500; cursor: pointer; margin-bottom: 8px; }
-        .equipment-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-gold); }
 
         a.demo-link { color: var(--accent-gold); text-decoration: none; font-weight: 500; }
         a.demo-link:hover { text-decoration: underline; }
 
         .hidden { display: none; }
-
-        /* Print formatting to ensure clean PDF export */
         .pdf-export-container { padding: 20px; background: var(--card-bg); color: var(--text-main); }
         .pdf-export-container a { text-decoration: none; color: var(--accent-gold); }
     </style>
@@ -88,7 +79,7 @@
     <!-- ================= PHASE 1 & 2: PROFILE ================= -->
     <div id="profile-tab" class="card">
         <h2>Phase 1 & 2: User Profile & Universal Calculation Core</h2>
-        <p class="subtitle" style="margin-bottom: 15px;">Input your metrics. Data automatically saves to your browser storage.</p>
+        <p class="subtitle" style="margin-bottom: 15px;">Input your metrics. Target protein automatically carries over to your Meal Plan.</p>
         
         <div class="form-grid">
             <div class="form-group">
@@ -149,21 +140,24 @@
     <div id="meal-tab" class="hidden">
         <div class="card" id="meal-input-card">
             <h2>Phase 4: Ingredient & Meal Frequency Customizer</h2>
+            <p class="subtitle" style="margin-bottom: 15px; color: var(--accent-gold);">Linked Target Protein: <span id="carriedProteinDisplay">200</span>g</p>
+            
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Meals Per Day</label>
-                    <select id="mealFrequency">
-                        <option value="4">4 Meals / Day</option>
-                        <option value="5">5 Meals / Day</option>
-                        <option value="6" selected>6 Meals / Day</option>
-                    </select>
+                    <label>Target Meals Per Day</label>
+                    <input type="number" id="mealFrequency" value="6" min="1" max="10">
                 </div>
                 <div class="form-group">
-                    <label>Do you have Whey Protein Powder?</label>
-                    <select id="hasProteinPowder">
-                        <option value="yes" selected>Yes (Use Protein Shakes)</option>
-                        <option value="no">No (Whole-Food Contingency Mode)</option>
-                    </select>
+                    <label>Primary Protein Sources (e.g., Chicken, Eggs, Whey)</label>
+                    <input type="text" id="proteinSources" value="Chicken Breast, Whey Protein, Eggs">
+                </div>
+                <div class="form-group">
+                    <label>Primary Carb Sources (e.g., Rice, Oats, Potato)</label>
+                    <input type="text" id="carbSources" value="Basmati Rice, Oats, Sweet Potato">
+                </div>
+                <div class="form-group">
+                    <label>Primary Fat Sources (e.g., Avocado, Olive Oil, Nuts)</label>
+                    <input type="text" id="fatSources" value="Almonds, Olive Oil, Avocado">
                 </div>
             </div>
             <button type="button" onclick="generateMealPlan()">Generate Scaled Meal Plan</button>
@@ -179,21 +173,18 @@
             </h2>
             
             <div id="meal-export-area" class="pdf-export-container">
-                <div id="contingency-alert" class="alert-box hidden">
-                    ℹ️ <strong>Whole-Food Mode Active:</strong> Protein powder is disabled. Meal slots have automatically adjusted to whole-food alternatives.
-                </div>
                 <div class="macro-totals">
-                    <div><span id="disp-cals">3,220</span> kcal<span>Target Calories</span></div>
-                    <div><span id="disp-protein">200</span>g<span>Target Protein</span></div>
-                    <div><span id="disp-carbs">295</span>g<span>Target Carbs</span></div>
-                    <div><span id="disp-fats">125</span>g<span>Target Fats</span></div>
+                    <div><span id="disp-cals">0</span> kcal<span>Target Calories</span></div>
+                    <div><span id="disp-protein">0</span>g<span>Target Protein</span></div>
+                    <div><span id="disp-carbs">0</span>g<span>Target Carbs</span></div>
+                    <div><span id="disp-fats">0</span>g<span>Target Fats</span></div>
                 </div>
                 <h3 style="font-size: 1rem; color: var(--accent-gold); margin-bottom: 10px;">Daily Meal Schedule</h3>
                 <table>
                     <thead>
                         <tr>
                             <th>Meal Slot</th>
-                            <th>Primary Food & Quantities</th>
+                            <th>Allocated Ingredients</th>
                             <th>Estimated Macros</th>
                         </tr>
                     </thead>
@@ -207,33 +198,29 @@
     <div id="workout-tab" class="hidden">
         <div class="card" id="workout-input-card">
             <h2>Phase 3 & 5: Equipment & Workout Length Builder</h2>
+            
             <div class="form-grid" style="margin-bottom: 15px;">
                 <div class="form-group">
-                    <label>Workout Session Depth / Length</label>
+                    <label>Available Equipment (e.g., Barbell, Dumbbells, Cables, Bench)</label>
+                    <input type="text" id="availEquipment" value="Barbell, Dumbbells, Adjustable Bench, Pull-up Bar">
+                </div>
+                <div class="form-group">
+                    <label>Max Available Weight (kg)</label>
+                    <input type="number" id="maxWeight" value="80">
+                </div>
+                <div class="form-group">
+                    <label>Cardio / Core Gear (e.g., Ab Roller, Treadmill)</label>
+                    <input type="text" id="coreEquipment" value="Ab Roller, Skipping Rope">
+                </div>
+                <div class="form-group">
+                    <label>Workout Session Depth</label>
                     <select id="workoutLength">
                         <option value="standard">Standard Session (~45 mins)</option>
                         <option value="extended" selected>Extended Detailed Session (~75+ mins)</option>
                     </select>
                 </div>
             </div>
-            <div class="equipment-grid">
-                <div class="equipment-item">
-                    <label><input type="checkbox" id="eq-barbell" checked> Barbell & Plates</label>
-                    <input type="text" id="weight-barbell" placeholder="Max weight (kg)" value="80">
-                </div>
-                <div class="equipment-item">
-                    <label><input type="checkbox" id="eq-db" checked> Dumbbells</label>
-                    <input type="text" id="weight-db" placeholder="Max per DB (kg)" value="30">
-                </div>
-                <div class="equipment-item">
-                    <label><input type="checkbox" id="eq-pullup" checked> Pull-Up Bar</label>
-                    <input type="text" id="weight-pullup" placeholder="Notes" value="Bodyweight">
-                </div>
-                <div class="equipment-item">
-                    <label><input type="checkbox" id="eq-ab" checked> Ab Roller</label>
-                    <input type="text" id="weight-ab" placeholder="Notes" value="Standard">
-                </div>
-            </div>
+            
             <button type="button" onclick="generateWorkoutPlan()">Generate Custom Workout Split</button>
         </div>
 
@@ -257,7 +244,6 @@ let globalCals = 3220;
 let globalProtein = 200;
 
 window.onload = function() {
-    loadSavedData();
     togglePrenatalWaiver();
 };
 
@@ -292,21 +278,10 @@ function switchTab(tab) {
     }
 }
 
-function saveAppData() {
-    // Standard saving logic as provided previously
-    // ...
-}
-
-function loadSavedData() {
-    // Standard loading logic as provided previously
-    // ...
-}
-
 function calculateProfile() {
     const genderMode = document.getElementById('userGender').value;
     const clearanceChecked = document.getElementById('medicalClearance').checked;
     
-    // Hard Liability Stop
     if (genderMode === 'pregnant' && !clearanceChecked) {
         alert("LIABILITY BLOCK: You must confirm explicit medical clearance before generating a prenatal program.");
         return;
@@ -321,7 +296,6 @@ function calculateProfile() {
 
     let bmr = (10 * weight) + (6.25 * height) - (5 * age);
     bmr += (genderMode === 'male' ? 5 : -161);
-
     let tdee = bmr * activity;
 
     if (genderMode === 'pregnant') {
@@ -335,15 +309,19 @@ function calculateProfile() {
     }
     
     globalProtein = customProtein;
-    // saveAppData();
+    
+    // Carry over protein to the Meal UI directly
+    document.getElementById('carriedProteinDisplay').innerText = globalProtein;
 
     alert(`Profile Calculated!\nCalories: ${globalCals} kcal\nProtein: ${globalProtein}g\nMoving to Meal Planner...`);
     switchTab('meal');
 }
 
 function generateMealPlan() {
-    const hasProtein = document.getElementById('hasProteinPowder').value === 'yes';
     const freq = parseInt(document.getElementById('mealFrequency').value) || 6;
+    const pSources = document.getElementById('proteinSources').value || "Mixed Proteins";
+    const cSources = document.getElementById('carbSources').value || "Mixed Carbs";
+    const fSources = document.getElementById('fatSources').value || "Mixed Fats";
     
     let carbs = Math.round((globalCals * 0.38) / 4);
     let fats = Math.round((globalCals * 0.32) / 9);
@@ -353,16 +331,9 @@ function generateMealPlan() {
     document.getElementById('disp-carbs').innerText = carbs;
     document.getElementById('disp-fats').innerText = fats;
 
-    const alertBox = document.getElementById('contingency-alert');
-    if (!hasProtein) alertBox.classList.remove('hidden');
-    else alertBox.classList.add('hidden');
-
     let html = '';
     for (let i = 1; i <= freq; i++) {
-        let desc = `Balanced Meal Slot ${i}: Lean protein + complex carbs & fats aligned to ${globalCals} kcal.`;
-        if (i === 3 && !hasProtein) desc = `[Whole Food] 4 Slices Brown Bread + Peanut Butter + Milk`;
-        else if (i === 3 && hasProtein) desc = `Protein Shake: 2 Scoops Whey + Milk + 50g Peanuts`;
-        
+        let desc = `Base: ${pSources}<br>Side: ${cSources}<br>Fats: ${fSources}`;
         html += `
             <tr>
                 <td><strong>Meal ${i}</strong></td>
@@ -379,17 +350,105 @@ function generateMealPlan() {
 
 function generateWorkoutPlan() {
     const isPregnant = document.getElementById('userGender').value === 'pregnant';
-    let html = ``;
-    
+    const lengthMode = document.getElementById('workoutLength').value;
+    const eqInput = document.getElementById('availEquipment').value;
+    const maxWt = document.getElementById('maxWeight').value;
+    const coreEq = document.getElementById('coreEquipment').value;
+
+    let html = `<p style="margin-bottom: 10px; font-size: 0.85rem; color: var(--text-muted);"><strong>Selected Gear:</strong> ${eqInput} (Max: ${maxWt}kg) | <strong>Core/Cardio:</strong> ${coreEq}</p>`;
+    let days = [];
+
     if (isPregnant) {
-        html += `<div class="liability-box" style="border: 2px solid #ff5555; background: #2a1111;">⚠️ <strong>MEDICAL CLEARANCE CONFIRMED ON EXPORT:</strong> This routine completely excludes heavy axial loading, high-fall risks, and breath-holding. Stop immediately if you feel dizzy or experience discomfort.</div>`;
-        html += `<h3>Monday: Upper Body Posture</h3><table><tr><td>Seated DB Press (Light)</td><td>Shoulders</td><td><a href="#">Demo</a></td></tr></table>`;
-        html += `<h3>Wednesday: Lower Body Stability</h3><table><tr><td>Supported Box Squats</td><td>Quads</td><td><a href="#">Demo</a></td></tr></table>`;
+        html += `<div class="liability-box" style="border: 2px solid #ff5555; background: #2a1111;">⚠️ <strong>MEDICAL CLEARANCE CONFIRMED ON EXPORT:</strong> This routine completely excludes heavy axial loading, high-fall risks, breath-holding (Valsalva), deep core-coning abdominal strain, and overheating. Stop immediately if you feel dizzy or experience discomfort.</div>`;
+        
+        let duration = lengthMode === 'extended' ? '⏱️ ~60 Mins (Low-Impact Strength & Mobility)' : '⏱️ ~35–45 Mins (Safe Maintenance)';
+        days = [
+            { day: `Monday: Upper Body & Postures | ${duration}`, exercises: [
+                { name: `Seated Shoulder Press (${maxWt}kg Max, Light)`, target: 'Shoulders & Posture', link: '#' },
+                { name: `Incline Bench Press (Supported 30°)`, target: 'Chest Support', link: '#' },
+                { name: `Supported Row (Bench)`, target: 'Upper Back Support', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: 'Resistance Band Lateral Pull-Downs', target: 'Upper Back & Scapula', link: '#' },
+                    { name: `Seated Bicep Curls`, target: 'Arms', link: '#' }
+                ] : [])
+            ]},
+            { day: `Wednesday: Lower Body Stability & Glutes | ${duration}`, exercises: [
+                { name: 'Goblet Squats to Box / Chair (Supported)', target: 'Quads & Pelvic Support', link: '#' },
+                { name: 'Bodyweight / Supported Glute Bridges', target: 'Glutes & Lower Back', link: '#' },
+                { name: 'Side-Lying Clamshells (Band optional)', target: 'Hip Stability & Pelvic Girdle', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: 'Wall Sit (Short Holds, Safe Pressure)', target: 'Quad & Leg Endurance', link: '#' },
+                    { name: 'Seated Calf Raises', target: 'Lower Leg Circulation', link: '#' }
+                ] : [])
+            ]},
+            { day: `Friday: Gentle Mobility & Transverse Core | ${duration}`, exercises: [
+                { name: 'Cat-Cow Spinal Mobility (Gentle Range)', target: 'Spine Relief', link: '#' },
+                { name: 'Modified Bird-Dog on All Fours (No Over-Extension)', target: 'Deep Core / Transverse Abdominis', link: '#' },
+                { name: 'Incline Wall Push-Ups', target: 'Chest & Arms Stability', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: 'Seated Butterfly Stretch & Hip Mobility', target: 'Pelvic Flexibility', link: '#' }
+                ] : [])
+            ]}
+        ];
     } else {
-        html += `<h3>Monday: Push Day</h3><table><tr><td>Incline Barbell Bench</td><td>Upper Chest</td><td><a href="#">Demo</a></td></tr></table>`;
-        html += `<h3>Tuesday: Pull Day</h3><table><tr><td>Barbell Rows</td><td>Back</td><td><a href="#">Demo</a></td></tr></table>`;
-        html += `<h3>Wednesday: Legs</h3><table><tr><td>Front Squats</td><td>Quads</td><td><a href="#">Demo</a></td></tr></table>`;
+        let duration = lengthMode === 'extended' ? '⏱️ ~75–90 Mins (Detailed Hypertrophy Session)' : '⏱️ ~45–50 Mins (Standard Session)';
+        days = [
+            { day: `Monday: Push (Chest, Shoulders, Triceps) | ${duration}`, exercises: [
+                { name: `Incline Bench Press (Up to ${maxWt}kg)`, target: 'Upper Chest', link: '#' },
+                { name: `Flat Dumbbell Press`, target: 'Mid Chest', link: '#' },
+                { name: `Seated Shoulder Press`, target: 'Delts', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: `Lateral Raises`, target: 'Side Delts', link: '#' },
+                    { name: `Close-Grip Floor Press (Up to ${maxWt}kg)`, target: 'Triceps', link: '#' }
+                ] : [])
+            ]},
+            { day: `Tuesday: Pull (Back & Biceps) | ${duration}`, exercises: [
+                { name: `Overhand Bent-Over Row (Up to ${maxWt}kg)`, target: 'Upper Back', link: '#' },
+                { name: `Neutral-Grip Pull-Ups / Pulldowns`, target: 'Lats', link: '#' },
+                { name: `Concentration Curls`, target: 'Biceps', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: `Heavy Shrugs (Up to ${maxWt}kg)`, target: 'Traps', link: '#' },
+                    { name: `Incline Hammer Curls`, target: 'Brachialis', link: '#' }
+                ] : [])
+            ]},
+            { day: `Wednesday: Legs 1 (Quad Focus) | ${duration}`, exercises: [
+                { name: `Front / Zercher Squats (Up to ${maxWt}kg)`, target: 'Quads', link: '#' },
+                { name: `Bulgarian Split Squats`, target: 'Quads & Glutes', link: '#' },
+                { name: `Core Work: ${coreEq}`, target: 'Core', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: `Walking Lunges`, target: 'Quad Burnout', link: '#' },
+                    { name: `Standing Calf Raises`, target: 'Calves', link: '#' }
+                ] : [])
+            ]},
+            { day: `Thursday: Upper Hypertrophy | ${duration}`, exercises: [
+                { name: `Seated 70° Incline Press`, target: 'Upper Shelf', link: '#' },
+                { name: `Lateral Raises`, target: 'Side Delts', link: '#' },
+                { name: `Skullcrushers / Close-Grip Press (Up to ${maxWt}kg)`, target: 'Triceps', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: `Bicep Curls`, target: 'Biceps', link: '#' },
+                    { name: `Core Work: ${coreEq}`, target: 'Core', link: '#' }
+                ] : [])
+            ]},
+            { day: `Friday: Legs 2 (Posterior Chain) | ${duration}`, exercises: [
+                { name: `Romanian Deadlifts (Up to ${maxWt}kg)`, target: 'Hamstrings & Glutes', link: '#' },
+                { name: `Single-Leg RDLs / Bridges`, target: 'Hamstrings', link: '#' },
+                { name: `Core Work: ${coreEq}`, target: 'Core', link: '#' },
+                ...(lengthMode === 'extended' ? [
+                    { name: `Hip Thrusts (Up to ${maxWt}kg)`, target: 'Glutes', link: '#' },
+                    { name: `Seated Hamstring Stretches`, target: 'Recovery', link: '#' }
+                ] : [])
+            ]}
+        ];
     }
+
+    days.forEach(d => {
+        html += `<h3 style="font-size: 1rem; color: var(--accent-gold); margin-top: 15px; margin-bottom: 5px;">${d.day}</h3>`;
+        html += `<table><thead><tr><th>Exercise & Gear</th><th>Target Muscle</th><th>Video Demo</th></tr></thead><tbody>`;
+        d.exercises.forEach(ex => {
+            html += `<tr><td>${ex.name}</td><td>${ex.target}</td><td><a class="demo-link" href="${ex.link}" target="_blank">Watch Demo ↗</a></td></tr>`;
+        });
+        html += `</tbody></table>`;
+    });
 
     document.getElementById('workout-content').innerHTML = html;
     document.getElementById('workout-input-card').classList.add('hidden');
@@ -405,11 +464,8 @@ function resetWorkoutForm() {
     document.getElementById('workout-input-card').classList.remove('hidden');
 }
 
-// PDF Generation Logic utilizing html2pdf.js
 function generatePDF(elementId, filenamePrefix) {
     const element = document.getElementById(elementId);
-    
-    // Temporarily adjust styling for better PDF output if needed
     element.style.backgroundColor = '#1c2128';
     
     const opt = {
@@ -421,7 +477,6 @@ function generatePDF(elementId, filenamePrefix) {
     };
 
     html2pdf().set(opt).from(element).save().then(() => {
-        // Reset styling after export
         element.style.backgroundColor = '';
     });
 }
